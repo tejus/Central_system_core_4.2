@@ -252,7 +252,6 @@ void service_start(struct service *svc, const char *dynamic_args)
         char tmp[32];
         int fd, sz;
 
-        umask(077);
 #ifdef __arm__
         /*
          * b/7188322 - Temporarily revert to the compat memory layout
