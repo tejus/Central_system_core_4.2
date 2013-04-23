@@ -31,7 +31,6 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <sys/un.h>
-#include <sys/personality.h>
 
 #ifdef HAVE_SELINUX
 #include <selinux/selinux.h>
@@ -107,7 +106,7 @@ void notify_service_state(const char *name, const char *state)
 }
 
 static int have_console;
-static char *console_name = "/dev/console";
+static char console_name[PROP_VALUE_MAX] = "/dev/console";
 static time_t process_needs_restart;
 
 static const char *ENV[32];
@@ -474,7 +473,7 @@ static void restart_processes()
 
 static void msg_start(const char *name)
 {
-    struct service *svc;
+    struct service *svc = NULL;
     char *tmp = NULL;
     char *args = NULL;
 
@@ -482,11 +481,13 @@ static void msg_start(const char *name)
         svc = service_find_by_name(name);
     else {
         tmp = strdup(name);
-        args = strchr(tmp, ':');
-        *args = '\0';
-        args++;
+        if (tmp) {
+            args = strchr(tmp, ':');
+            *args = '\0';
+            args++;
 
-        svc = service_find_by_name(tmp);
+            svc = service_find_by_name(tmp);
+        }
     }
 
     if (svc) {
@@ -601,11 +602,9 @@ static int keychord_init_action(int nargs, char **args)
 static int console_init_action(int nargs, char **args)
 {
     int fd;
-    char tmp[PROP_VALUE_MAX];
 
     if (console[0]) {
-        snprintf(tmp, sizeof(tmp), "/dev/%s", console);
-        console_name = strdup(tmp);
+        snprintf(console_name, sizeof(console_name), "/dev/%s", console);
     }
 
     fd = open(console_name, O_RDWR);
@@ -874,19 +873,19 @@ int audit_callback(void *data, security_class_t cls, char *buf, size_t len)
 static int charging_mode_booting(void)
 {
 #ifndef BOARD_CHARGING_MODE_BOOTING_LPM
-    return 0;
+	return 0;
 #else
-    int f;
-    char cmb;
-    f = open(BOARD_CHARGING_MODE_BOOTING_LPM, O_RDONLY);
-    if (f < 0)
-        return 0;
+	int f;
+	char cmb;
+	f = open(BOARD_CHARGING_MODE_BOOTING_LPM, O_RDONLY);
+	if (f < 0)
+		return 0;
 
-    if (1 != read(f, (void *)&cmb,1))
-        return 0;
+	if (1 != read(f, (void *)&cmb,1))
+		return 0;
 
-    close(f);
-    return ('1' == cmb);
+	close(f);
+	return ('1' == cmb);
 #endif
 }
 
