@@ -545,7 +545,7 @@ static inline bool audio_is_input_device(audio_devices_t device)
 static inline bool audio_is_output_devices(audio_devices_t device)
 {
 #ifdef ICS_AUDIO_BLOB
-    return (device & ~AUDIO_DEVICE_OUT_ALL) == 0;s
+    return (device & ~AUDIO_DEVICE_OUT_ALL) == 0;
 #else
     return (device & AUDIO_DEVICE_BIT_IN) == 0;
 #endif
