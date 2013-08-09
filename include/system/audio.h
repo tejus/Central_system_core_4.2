@@ -53,7 +53,7 @@ typedef enum {
     AUDIO_STREAM_ENFORCED_AUDIBLE = 7, /* Sounds that cannot be muted by user and must be routed to speaker */
     AUDIO_STREAM_DTMF             = 8,
     AUDIO_STREAM_TTS              = 9,
-#ifdef QCOM_FM_ENABLED
+#if defined(QCOM_FM_ENABLED) || defined(USES_AUDIO_LEGACY)
     AUDIO_STREAM_FM               = 10,
 #endif
 #ifdef QCOM_HARDWARE
@@ -355,7 +355,7 @@ typedef enum {
 enum {
     AUDIO_DEVICE_NONE                          = 0x0,
     /* reserved bits */
-#if defined(ICS_AUDIO_BLOB) || defined(MR0_AUDIO_BLOB)
+#if defined(ICS_AUDIO_BLOB) || defined(MR0_AUDIO_BLOB) || defined(USES_AUDIO_LEGACY)
     AUDIO_DEVICE_BIT_IN                        = 0x10000,
 #else
     AUDIO_DEVICE_BIT_IN                        = 0x80000000,
@@ -424,7 +424,7 @@ enum {
                                  AUDIO_DEVICE_OUT_USB_DEVICE),
 
     /* input devices */
-#if defined(ICS_AUDIO_BLOB) || defined(MR0_AUDIO_BLOB)
+#if defined(ICS_AUDIO_BLOB) || defined(MR0_AUDIO_BLOB) || defined(USES_AUDIO_LEGACY)
     AUDIO_DEVICE_IN_COMMUNICATION         = AUDIO_DEVICE_BIT_IN * 0x1,
     AUDIO_DEVICE_IN_AMBIENT               = AUDIO_DEVICE_BIT_IN * 0x2,
     AUDIO_DEVICE_IN_BUILTIN_MIC           = AUDIO_DEVICE_BIT_IN * 0x4,
@@ -525,7 +525,7 @@ typedef enum {
 
 static inline bool audio_is_output_device(audio_devices_t device)
 {
-#ifdef ICS_AUDIO_BLOB
+#if defined(ICS_AUDIO_BLOB)  || defined(USES_AUDIO_LEGACY)
     if ((popcount(device) == 1) && ((device & ~AUDIO_DEVICE_OUT_ALL) == 0))
 #else
     if (((device & AUDIO_DEVICE_BIT_IN) == 0) &&
@@ -540,7 +540,7 @@ static inline bool audio_is_output_device(audio_devices_t device)
 
 static inline bool audio_is_input_device(audio_devices_t device)
 {
-#ifdef ICS_AUDIO_BLOB
+#if defined(ICS_AUDIO_BLOB)  || defined(USES_AUDIO_LEGACY)
     if ((popcount(device) == 1) && ((device & ~AUDIO_DEVICE_IN_ALL) == 0)) {
 #else
     if ((device & AUDIO_DEVICE_BIT_IN) != 0) {
