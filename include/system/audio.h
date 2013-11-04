@@ -49,7 +49,9 @@ typedef enum {
     AUDIO_STREAM_ENFORCED_AUDIBLE = 7, /* Sounds that cannot be muted by user and must be routed to speaker */
     AUDIO_STREAM_DTMF             = 8,
     AUDIO_STREAM_TTS              = 9,
-
+#if defined(USES_AUDIO_LEGACY)
+    AUDIO_STREAM_FM               = 10,
+#endif
     AUDIO_STREAM_CNT,
     AUDIO_STREAM_MAX              = AUDIO_STREAM_CNT - 1,
 } audio_stream_type_t;
@@ -290,7 +292,11 @@ typedef enum {
 enum {
     AUDIO_DEVICE_NONE                          = 0x0,
     /* reserved bits */
+#if defined(ICS_AUDIO_BLOB) || defined(MR0_AUDIO_BLOB)  || defined(USES_AUDIO_LEGACY)
+    AUDIO_DEVICE_BIT_IN                        = 0x10000,
+#else
     AUDIO_DEVICE_BIT_IN                        = 0x80000000,
+#endif
     AUDIO_DEVICE_BIT_DEFAULT                   = 0x40000000,
     /* output devices */
     AUDIO_DEVICE_OUT_EARPIECE                  = 0x1,
@@ -336,7 +342,22 @@ enum {
     AUDIO_DEVICE_OUT_ALL_USB  = (AUDIO_DEVICE_OUT_USB_ACCESSORY |
                                  AUDIO_DEVICE_OUT_USB_DEVICE),
 
-    /* input devices */
+#if defined(ICS_AUDIO_BLOB) || defined(MR0_AUDIO_BLOB) || defined(USES_AUDIO_LEGACY)
+    AUDIO_DEVICE_IN_COMMUNICATION         = AUDIO_DEVICE_BIT_IN * 0x1,
+    AUDIO_DEVICE_IN_AMBIENT               = AUDIO_DEVICE_BIT_IN * 0x2,
+    AUDIO_DEVICE_IN_BUILTIN_MIC           = AUDIO_DEVICE_BIT_IN * 0x4,
+    AUDIO_DEVICE_IN_BLUETOOTH_SCO_HEADSET = AUDIO_DEVICE_BIT_IN * 0x8,
+    AUDIO_DEVICE_IN_WIRED_HEADSET         = AUDIO_DEVICE_BIT_IN * 0x10,
+    AUDIO_DEVICE_IN_AUX_DIGITAL           = AUDIO_DEVICE_BIT_IN * 0x20,
+    AUDIO_DEVICE_IN_VOICE_CALL            = AUDIO_DEVICE_BIT_IN * 0x40,
+    AUDIO_DEVICE_IN_BACK_MIC              = AUDIO_DEVICE_BIT_IN * 0x80,
+    AUDIO_DEVICE_IN_REMOTE_SUBMIX         = AUDIO_DEVICE_BIT_IN * 0x100,
+    AUDIO_DEVICE_IN_ANLG_DOCK_HEADSET     = AUDIO_DEVICE_BIT_IN * 0x200,
+    AUDIO_DEVICE_IN_DGTL_DOCK_HEADSET     = AUDIO_DEVICE_BIT_IN * 0x400,
+    AUDIO_DEVICE_IN_USB_ACCESSORY         = AUDIO_DEVICE_BIT_IN * 0x800,
+    AUDIO_DEVICE_IN_USB_DEVICE            = AUDIO_DEVICE_BIT_IN * 0x1000, 
+    AUDIO_DEVICE_IN_DEFAULT               = AUDIO_DEVICE_IN_BUILTIN_MIC,
+#else
     AUDIO_DEVICE_IN_COMMUNICATION         = AUDIO_DEVICE_BIT_IN | 0x1,
     AUDIO_DEVICE_IN_AMBIENT               = AUDIO_DEVICE_BIT_IN | 0x2,
     AUDIO_DEVICE_IN_BUILTIN_MIC           = AUDIO_DEVICE_BIT_IN | 0x4,
@@ -351,6 +372,7 @@ enum {
     AUDIO_DEVICE_IN_USB_ACCESSORY         = AUDIO_DEVICE_BIT_IN | 0x800,
     AUDIO_DEVICE_IN_USB_DEVICE            = AUDIO_DEVICE_BIT_IN | 0x1000,
     AUDIO_DEVICE_IN_DEFAULT               = AUDIO_DEVICE_BIT_IN | AUDIO_DEVICE_BIT_DEFAULT,
+#endif
 
     AUDIO_DEVICE_IN_ALL     = (AUDIO_DEVICE_IN_COMMUNICATION |
                                AUDIO_DEVICE_IN_AMBIENT |
@@ -438,8 +460,12 @@ static const audio_offload_info_t AUDIO_INFO_INITIALIZER = {
 
 static inline bool audio_is_output_device(audio_devices_t device)
 {
+#if defined(ICS_AUDIO_BLOB)  || defined(USES_AUDIO_LEGACY)
+    if ((popcount(device) == 1) && ((device & ~AUDIO_DEVICE_OUT_ALL) == 0))
+#else
     if (((device & AUDIO_DEVICE_BIT_IN) == 0) &&
             (popcount(device) == 1) && ((device & ~AUDIO_DEVICE_OUT_ALL) == 0))
+#endif
         return true;
     else
         return false;
@@ -447,9 +473,13 @@ static inline bool audio_is_output_device(audio_devices_t device)
 
 static inline bool audio_is_input_device(audio_devices_t device)
 {
+#if defined(ICS_AUDIO_BLOB)  || defined(USES_AUDIO_LEGACY)
+    if ((popcount(device) == 1) && ((device & ~AUDIO_DEVICE_IN_ALL) == 0)) {
+#else
     if ((device & AUDIO_DEVICE_BIT_IN) != 0) {
         device &= ~AUDIO_DEVICE_BIT_IN;
         if ((popcount(device) == 1) && ((device & ~AUDIO_DEVICE_IN_ALL) == 0))
+#endif
             return true;
     }
     return false;
