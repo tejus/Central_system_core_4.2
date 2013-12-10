@@ -109,6 +109,11 @@ void CallStack::update(int32_t ignoreDepth, int32_t maxDepth, pid_t tid) {
     mCount = count > 0 ? count : 0;
 }
 
+// Wrapper For SGX530 libs.
+void CallStack::update(int32_t ignoreDepth, int32_t maxDepth) {
+    update(ignoreDepth, maxDepth, CURRENT_THREAD);
+}
+
 void CallStack::log(const char* logtag, android_LogPriority priority, const char* prefix) const {
     LogPrinter printer(logtag, priority, prefix, /*ignoreBlankLines*/false);
     print(printer);

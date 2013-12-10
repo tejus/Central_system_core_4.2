@@ -68,6 +68,9 @@ public:
     // Immediately collect the stack traces for the specified thread.
     void update(int32_t ignoreDepth=1, int32_t maxDepth=MAX_DEPTH, pid_t tid=CURRENT_THREAD);
 
+// Wrapper For SGX530 libs.
+    void update(int32_t ignoreDepth, int32_t maxDepth);
+
     // Dump a stack trace to the log using the supplied logtag.
     void log(const char* logtag,
              android_LogPriority priority = ANDROID_LOG_DEBUG,
