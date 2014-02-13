@@ -187,6 +187,9 @@ bool BatteryMonitor::update(void) {
         props.batteryPresent = true;
 
     props.batteryLevel = getIntField(mHealthdConfig->batteryCapacityPath);
+    if (props.batteryLevel > 100)
+        props.batteryLevel = 100;
+
     props.batteryVoltage = getIntField(mHealthdConfig->batteryVoltagePath) / 1000;
 
     if (!mHealthdConfig->batteryCurrentNowPath.isEmpty())
